@@ -10,6 +10,18 @@ langchain-openai==0.0.5
 langchain-anthropic==0.1.1
 langchain-community==0.0.20
 
+# Vector Databases & RAG
+chromadb==0.4.22
+faiss-cpu==1.7.4
+tiktoken==0.5.2
+pypdf2==3.0.1
+python-docx==1.1.0
+python-pptx==0.6.23
+openpyxl==3.1.2
+markdown==3.5.2
+beautifulsoup4==4.12.3
+unstructured==0.12.0
+
 # Database
 sqlalchemy==2.0.25
 alembic==1.13.1
@@ -25,18 +37,35 @@ bcrypt==4.1.2
 # Rate Limiting & Caching
 slowapi==0.1.9
 redis==5.0.1
+hiredis==2.3.2
+
+# Background Jobs
+celery==5.3.6
+celery[redis]==5.3.6
 
 # HTTP Client
 httpx==0.26.0
 aiohttp==3.9.1
+aiofiles==23.2.1
+
+# Export & File Processing
+reportlab==4.0.9
+weasyprint==60.2
+pillow==10.2.0
 
 # Utilities
 python-dotenv==1.0.0
 pyyaml==6.0.1
+pytz==2024.1
 
 # Monitoring & Logging
 prometheus-client==0.19.0
 python-json-logger==2.0.7
+sentry-sdk[fastapi]==1.40.0
+
+# Email
+aiosmtplib==3.0.1
+jinja2==3.1.3
 
 # Testing
 pytest==7.4.4

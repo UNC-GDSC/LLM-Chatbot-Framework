@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     # Application
     APP_NAME: str = "LLM Chatbot Framework"
-    APP_VERSION: str = "1.0.0"
+    APP_VERSION: str = "2.0.0"
     DEBUG: bool = False
     ENVIRONMENT: str = "production"
 
@@ -64,6 +64,43 @@ class Settings(BaseSettings):
     MAX_CONVERSATION_HISTORY: int = 100
     CONVERSATION_TIMEOUT_MINUTES: int = 60
 
+    # File Upload
+    MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB
+    UPLOAD_DIR: str = "./uploads"
+    ALLOWED_EXTENSIONS: List[str] = [".pdf", ".txt", ".docx", ".md", ".csv", ".xlsx"]
+
+    # Vector Database (RAG)
+    VECTOR_DB_TYPE: str = "chromadb"  # chromadb or faiss
+    VECTOR_DB_PATH: str = "./vector_db"
+    EMBEDDING_MODEL: str = "text-embedding-ada-002"
+    CHUNK_SIZE: int = 1000
+    CHUNK_OVERLAP: int = 200
+
+    # Redis Cache
+    REDIS_CACHE_TTL: int = 3600  # 1 hour
+
+    # Celery (Background Jobs)
+    CELERY_BROKER_URL: Optional[str] = None
+    CELERY_RESULT_BACKEND: Optional[str] = None
+
+    # Email
+    SMTP_HOST: Optional[str] = None
+    SMTP_PORT: int = 587
+    SMTP_USER: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_FROM_EMAIL: Optional[str] = None
+
+    # Analytics
+    ENABLE_ANALYTICS: bool = True
+    TRACK_TOKEN_USAGE: bool = True
+
+    # Features
+    ENABLE_RAG: bool = True
+    ENABLE_FILE_UPLOAD: bool = True
+    ENABLE_CONVERSATION_SHARING: bool = True
+    ENABLE_EXPORTS: bool = True
+    ENABLE_ADMIN_PANEL: bool = True
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: str | List[str]) -> List[str]:
@@ -73,6 +110,17 @@ class Settings(BaseSettings):
                 return json.loads(v)
             except json.JSONDecodeError:
                 return [origin.strip() for origin in v.split(",")]
+        return v
+
+    @field_validator("ALLOWED_EXTENSIONS", mode="before")
+    @classmethod
+    def parse_allowed_extensions(cls, v: str | List[str]) -> List[str]:
+        """Parse allowed extensions from string or list."""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return [ext.strip() for ext in v.split(",")]
         return v
 
     class Config:

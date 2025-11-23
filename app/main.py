@@ -11,6 +11,7 @@ import time
 
 from app.core.config import settings
 from app.core.database import init_db, close_db
+from app.core.cache import cache
 from app.core.logging import setup_logging, get_logger
 from app.api.v1 import router as api_v1_router
 from app.middleware.error_handler import (
@@ -34,10 +35,12 @@ async def lifespan(app: FastAPI):
     logger.info("Starting application...")
     await init_db()
     logger.info(f"Database initialized: {settings.DATABASE_URL}")
+    await cache.connect()
     logger.info(f"Application started on {settings.HOST}:{settings.PORT}")
     yield
     # Shutdown
     logger.info("Shutting down application...")
+    await cache.disconnect()
     await close_db()
     logger.info("Application shutdown complete")
 
@@ -46,7 +49,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="A production-ready chatbot framework using FastAPI and LangChain",
+    description="Production-ready chatbot framework with RAG, file uploads, analytics, and more",
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,

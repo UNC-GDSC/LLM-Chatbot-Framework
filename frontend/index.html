@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Chatbot - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 70%;
+        }
+
+        .message.user {
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+
+        .message-content {
+            background: #f1f3f4;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+        }
+
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #messageInput:focus {
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .auth-form {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #f1f3f4;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .success {
+            color: #28a745;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="authSection">
+            <div class="header">
+                <h1>🤖 LLM Chatbot Framework</h1>
+                <p>Login or Register to start chatting</p>
+            </div>
+            <div class="auth-form">
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('login')">Login</div>
+                    <div class="tab" onclick="switchTab('register')">Register</div>
+                </div>
+
+                <div id="loginForm">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="loginUsername" placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter password">
+                    </div>
+                    <button onclick="login()">Login</button>
+                    <div id="loginMessage"></div>
+                </div>
+
+                <div id="registerForm" class="hidden">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="registerEmail" placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="registerUsername" placeholder="Choose username">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="registerPassword" placeholder="Choose password">
+                    </div>
+                    <button onclick="register()">Register</button>
+                    <div id="registerMessage"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="chatSection" class="hidden">
+            <div class="header">
+                <h1>🤖 Chat Assistant</h1>
+                <button onclick="logout()" style="background: transparent; border: 1px solid white;">Logout</button>
+            </div>
+            <div class="chat-area" id="chatArea">
+                <div class="message">
+                    <div class="message-content">
+                        👋 Hello! I'm your AI assistant. How can I help you today?
+                    </div>
+                </div>
+            </div>
+            <div class="input-area">
+                <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()" id="sendButton">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = localStorage.getItem('token');
+        let conversationId = null;
+
+        if (token) {
+            showChat();
+        }
+
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+
+            if (tab === 'login') {
+                document.getElementById('loginForm').classList.remove('hidden');
+                document.getElementById('registerForm').classList.add('hidden');
+                tabs[0].classList.add('active');
+            } else {
+                document.getElementById('registerForm').classList.remove('hidden');
+                document.getElementById('loginForm').classList.add('hidden');
+                tabs[1].classList.add('active');
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('registerEmail').value;
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const messageEl = document.getElementById('registerMessage');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, username, password })
+                });
+
+                if (response.ok) {
+                    messageEl.className = 'success';
+                    messageEl.textContent = 'Registration successful! Please login.';
+                    setTimeout(() => switchTab('login'), 1500);
+                } else {
+                    const error = await response.json();
+                    messageEl.className = 'error';
+                    messageEl.textContent = error.detail || 'Registration failed';
+                }
+            } catch (error) {
+                messageEl.className = 'error';
+                messageEl.textContent = 'Network error. Please try again.';
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const messageEl = document.getElementById('loginMessage');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    token = data.access_token;
+                    localStorage.setItem('token', token);
+                    showChat();
+                } else {
+                    const error = await response.json();
+                    messageEl.className = 'error';
+                    messageEl.textContent = error.detail || 'Login failed';
+                }
+            } catch (error) {
+                messageEl.className = 'error';
+                messageEl.textContent = 'Network error. Please try again.';
+            }
+        }
+
+        function logout() {
+            token = null;
+            conversationId = null;
+            localStorage.removeItem('token');
+            document.getElementById('chatSection').classList.add('hidden');
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('chatArea').innerHTML = `
+                <div class="message">
+                    <div class="message-content">
+                        👋 Hello! I'm your AI assistant. How can I help you today?
+                    </div>
+                </div>
+            `;
+        }
+
+        function showChat() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('chatSection').classList.remove('hidden');
+        }
+
+        function addMessage(content, isUser) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : ''}`;
+            messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            addMessage(message, true);
+            input.value = '';
+
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
+
+            try {
+                const response = await fetch(`${API_BASE}/chat/message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        message,
+                        conversation_id: conversationId
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    conversationId = data.conversation_id;
+                    addMessage(data.message.content, false);
+                } else {
+                    addMessage('Sorry, there was an error processing your message.', false);
+                }
+            } catch (error) {
+                addMessage('Network error. Please check your connection.', false);
+            }
+
+            sendButton.disabled = false;
+            sendButton.textContent = 'Send';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
